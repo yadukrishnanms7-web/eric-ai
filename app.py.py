@@ -90,7 +90,7 @@ with st.chat_message("assistant"):
                 
                 response = st.session_state.gemini_client.models.generate_content(
                     model='gemini-2.5-flash',
-                    contents=user_query, 
+                    contents=[user_query],
                     config=types.GenerateContentConfig(
                         system_instruction=system_prompt,
                         temperature=0.8
@@ -105,7 +105,7 @@ with st.chat_message("assistant"):
                     response_placeholder.markdown("<span style='color:white; font-size:18px;'>ERIC onnum machane... 😜</span>", unsafe_allow_html=True)
             except Exception as e:
                 error_msg = str(e)
-                if "429" in error_msg or "503" in error_msg:
-                    response_placeholder.markdown("<span style='color:#ff4b4b; font-size:16px;'>🚨 അളിയാ ഗൂഗിളിന്റെ ഫ്രീ സെർവർ ഇത്തിരി ബിസിയാണ്! ഒരു 10 സെക്കൻഡ് കഴിഞ്ഞിട്ട് അടുത്ത മെസ്സേജ് അയക്കണേ... 😉</span>", unsafe_allow_html=True)
+                if "429" in error_msg or "503" in error_msg or "400" in error_msg:
+                    response_placeholder.markdown("<span style='color:#ff4b4b; font-size:16px;'>🚨 അളിയാ ചെറിയൊരു സെർവർ ബിസിയാണ്! ഒരു 10 സെക്കൻഡ് കഴിഞ്ഞിട്ട് ഈ മെസ്സേജ് ഒന്നുകൂടി അയക്കണേ... 😉</span>", unsafe_allow_html=True)
                 else:
                     st.error(f"Error: {e}")
