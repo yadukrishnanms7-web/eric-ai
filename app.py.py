@@ -60,7 +60,7 @@ Your personality traits:
 """
 
 st.title("😉 ERIC AI")
-st.info("Hello Welcome Machane... 🔥")
+st.info("Hello Welcome Machane...🔥")
 st.divider()
 
 if not GOOGLE_API_KEY:
@@ -94,8 +94,9 @@ with st.chat_message("assistant"):
                         types.Content(role=role_type, parts=[types.Part.from_text(text=m["text"])])
                     )
                 
+                
                 response = st.session_state.gemini_client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-1.5-flash',
                     contents=formatted_contents,
                     config=types.GenerateContentConfig(
                         system_instruction=system_prompt,
@@ -110,4 +111,9 @@ with st.chat_message("assistant"):
                 else:
                     response_placeholder.markdown("<span style='color:white; font-size:18px;'>ERIC onnum mindiyilla... 😜</span>", unsafe_allow_html=True)
             except Exception as e:
-                st.error(f"Error: {e}")
+                
+                error_msg = str(e)
+                if "429" in error_msg or "503" in error_msg:
+                    response_placeholder.markdown("<span style='color:#ff4b4b; font-size:16px;'>🚨 അളിയാ ഗൂഗിളിന്റെ ഫ്രീ സെർവർ ഇത്തിരി ബിസിയാണ്! ഒരു 10 സെക്കൻഡ് കഴിഞ്ഞിട്ട് അടുത്ത മെസ്സേജ് അയക്കണേ... 😉</span>", unsafe_allow_html=True)
+                else:
+                    st.error(f"Error: {e}")
