@@ -80,17 +80,21 @@ for msg in st.session_state.messages:
 
 
 if user_query := st.chat_input("ERIC is here, what can I do for you?"):
-    if user_query.strip():
+    
+    clean_query = user_query.strip() if user_query else ""
+    
+    if clean_query:
         with st.chat_message("user"):
-            st.markdown(f"<span style='color:white; font-size:18px;'>{user_query}</span>", unsafe_allow_html=True)
-        st.session_state.messages.append({"role": "user", "text": user_query})
-with st.chat_message("assistant"):
+            st.markdown(f"<span style='color:white; font-size:18px;'>{clean_query}</span>", unsafe_allow_html=True)
+st.session_state.messages.append({"role": "user", "text": clean_query})
+        
+        with st.chat_message("assistant"):
             response_placeholder = st.empty()
             try:
                 
                 response = st.session_state.gemini_client.models.generate_content(
                     model='gemini-2.5-flash',
-                    contents=[user_query],
+                    contents=[clean_query],
                     config=types.GenerateContentConfig(
                         system_instruction=system_prompt,
                         temperature=0.8
@@ -102,7 +106,7 @@ with st.chat_message("assistant"):
                     response_placeholder.markdown(f"<span style='color:white; font-size:18px;'>{assistant_reply}</span>", unsafe_allow_html=True)
                     st.session_state.messages.append({"role": "assistant", "text": assistant_reply})
                 else:
-                    response_placeholder.markdown("<span style='color:white; font-size:18px;'>ERIC onnum machane... 😜</span>", unsafe_allow_html=True)
+                    response_placeholder.markdown("<span style='color:white; font-size:18px;'>ERIC onnum mindiyilla... 😜</span>", unsafe_allow_html=True)
             except Exception as e:
                 error_msg = str(e)
                 if "429" in error_msg or "503" in error_msg or "400" in error_msg:
