@@ -1,12 +1,15 @@
 import os
 import streamlit as st
-from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
 
-load_dotenv()
-GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+if "GEMINI_API_KEY" in os.environ:
+    GOOGLE_API_KEY = os.environ["GEMINI_API_KEY"]
+elif st.secrets and "GEMINI_API_KEY" in st.secrets:
+    GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
+else:
+    GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 st.set_page_config(page_title="ERIC AI", page_icon="😉", layout="wide")
@@ -14,63 +17,15 @@ st.set_page_config(page_title="ERIC AI", page_icon="😉", layout="wide")
 
 st.markdown("""
     <style>
-    
     .stApp { background-color: #000000; color: #ffffff; }
-    
-    
-    div[data-testid="stChatInput"] {
-        background-color: transparent !important;
-        border: none !important;
-    }
-    
-    
-    div[data-testid="stChatInput"] > div {
-        background-color: #000000 !important;
-        border: 2px solid #ffffff !important;
-        border-radius: 10px !important;
-    }
-    
-    
-    .stChatInput textarea { 
-        background-color: #000000 !important; 
-        color: #ffffff !important; 
-        font-size: 16px !important;
-        min-height: 45px !important;
-        overflow-y: auto !important;
-    }
-    
-    
-    .stChatInput textarea::placeholder {
-        color: #aaaaaa !important;
-    }
-    
-    
-    div.stAlert, div[data-testid="stNotification"] {
-        background-color: #1a1a24 !important;
-        border: 1px solid #333344 !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-    }
-    
-    
-    div[data-testid="stChatMessage"] { 
-        background-color: #111111 !important; 
-        border-radius: 12px !important; 
-        margin-bottom: 12px !important; 
-        padding: 15px !important;
-    }
-    
-    
-    p, span, h1, h2, h3, div {
-        color: #ffffff !important;
-    }
-    
-    
-    button[data-testid="baseButton-secondary"] { 
-        background-color: #ffffff; 
-        color: black; 
-        font-weight: bold; 
-    }
+    div[data-testid="stChatInput"] { background-color: transparent !important; border: none !important; }
+    div[data-testid="stChatInput"] > div { background-color: #000000 !important; border: 2px solid #ffffff !important; border-radius: 10px !important; }
+    .stChatInput textarea { background-color: #000000 !important; color: #ffffff !important; font-size: 16px !important; min-height: 45px !important; overflow-y: auto !important; }
+    .stChatInput textarea::placeholder { color: #aaaaaa !important; }
+    div.stAlert, div[data-testid="stNotification"] { background-color: #1a1a24 !important; border: 1px solid #333344 !important; border-radius: 12px !important; padding: 20px !important; }
+    div[data-testid="stChatMessage"] { background-color: #111111 !important; border-radius: 12px !important; margin-bottom: 12px !important; padding: 15px !important; }
+    p, span, h1, h2, h3, div { color: #ffffff !important; }
+    button[data-testid="baseButton-secondary"] { background-color: #ffffff; color: black; font-weight: bold; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -113,7 +68,7 @@ st.info("Hello Welcome Machane...🔥")
 st.divider()
 
 if not GOOGLE_API_KEY:
-    st.error("Error: API Key missing in .env file! ❌")
+    st.error("Error: API Key missing! ❌")
     st.stop()
 
 
@@ -124,14 +79,14 @@ if "gemini_client" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(f"<span style='color:white; font-size:18px;'>{msg['text']}</span>", unsafe_allow_html=True)
 
 
 if user_query := st.chat_input("ERIC is here, what can I do for you?"):
-    if user_query.strip():
-        
+if user_query.strip():
         with st.chat_message("user"):
             st.markdown(f"<span style='color:white; font-size:18px;'>{user_query}</span>", unsafe_allow_html=True)
         st.session_state.messages.append({"role": "user", "text": user_query})
@@ -140,9 +95,16 @@ if user_query := st.chat_input("ERIC is here, what can I do for you?"):
             response_placeholder = st.empty()
             try:
                 
+                formatted_contents = []
+                for m in st.session_state.messages:
+                    role_type = "user" if m["role"] == "user" else "model"
+                    formatted_contents.append(
+                        types.Content(role=role_type, parts=[types.Part.from_text(text=m["text"])])
+                    )
+                
                 response = st.session_state.gemini_client.models.generate_content(
                     model='gemini-2.5-flash',
-                    contents=user_query,
+                    contents=formatted_contents,
                     config=types.GenerateContentConfig(
                         system_instruction=system_prompt,
                         temperature=0.8
