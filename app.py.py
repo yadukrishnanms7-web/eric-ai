@@ -79,19 +79,16 @@ for msg in st.session_state.messages:
         st.markdown(f"<span style='color:white; font-size:18px;'>{msg['text']}</span>", unsafe_allow_html=True)
 
 
-if user_query := st.chat_input("ERIC is here, what can I do for you?"):
-    
-    clean_query = user_query.strip() if user_query else ""
-    
+user_query = st.chat_input("ERIC is here, what can I do for you?")
+if user_query:
+    clean_query = user_query.strip()
     if clean_query:
         with st.chat_message("user"):
             st.markdown(f"<span style='color:white; font-size:18px;'>{clean_query}</span>", unsafe_allow_html=True)
-st.session_state.messages.append({"role": "user", "text": clean_query})
-        
-        with st.chat_message("assistant"):
+        st.session_state.messages.append({"role": "user", "text": clean_query})
+with st.chat_message("assistant"):
             response_placeholder = st.empty()
             try:
-                
                 response = st.session_state.gemini_client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=[clean_query],
